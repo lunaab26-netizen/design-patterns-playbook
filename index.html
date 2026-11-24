@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Design Patterns Playbook — 18 patterns, with code</title>
+<style>
+  :root{
+    --paper:#f7f4ee;
+    --card:#fffdf9;
+    --ink:#14181d;
+    --ink-soft:#3d4650;
+    --muted:#6f7783;
+    --line:#e2dbcf;
+    --line-strong:#cfc5b4;
+    --accent:#c2410c;
+    --accent-soft:#fbe9df;
+    --teal:#0f766e;
+    --teal-soft:#e2f1ee;
+    --code-bg:#10161c;
+    --code-line:#1e2833;
+    --radius:3px;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--sans);font-size:16px;line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:50;
+    background:rgba(20,24,29,.97);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid #2a333d;
+    color:#f2efe8;
+  }
+  .topbar-inner{
+    max-width:1180px;margin:0 auto;padding:12px 24px;
+    display:flex;align-items:center;gap:20px;
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-size:17px;letter-spacing:.2px;white-space:nowrap}
+  .brand .mark{
+    width:22px;height:22px;border:1.5px solid var(--accent);
+    display:grid;place-items:center;font-size:11px;color:var(--accent);
+    font-family:var(--mono);border-radius:2px;
+  }
+  .search{
+    margin-left:auto;position:relative;flex:1;max-width:340px;
+  }
+  .search input{
+    width:100%;background:#1c242d;border:1px solid #33404d;color:#f2efe8;
+    padding:8px 12px 8px 34px;border-radius:2px;font-size:13.5px;font-family:var(--sans);
+    outline:none;transition:border-color .15s;
+  }
+  .search input:focus{border-color:var(--accent)}
+  .search input::placeholder{color:#8b96a3}
+  .search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);opacity:.55}
+
+  /* ---------- hero ---------- */
+  .hero{padding:64px 0 40px;border-bottom:1px solid var(--line)}
+  .kicker{
+    font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--accent);margin-bottom:18px;display:flex;align-items:center;gap:10px;
+  }
+  .kicker::after{content:"";height:1px;flex:1;background:var(--line-strong);max-width:120px}
+  h1{
+    font-family:var(--serif);font-weight:600;font-size:clamp(34px,5.2vw,58px);
+    line-height:1.06;letter-spacing:-.02em;margin:0 0 20px;max-width:16ch;
+  }
+  h1 em{font-style:italic;color:var(--accent)}
+  .lede{font-size:18px;color:var(--ink-soft);max-width:62ch;margin:0 0 32px}
+  .stats{display:flex;flex-wrap:wrap;gap:0;border-top:1px solid var(--line);padding-top:22px}
+  .stat{padding-right:38px;margin-right:38px;border-right:1px solid var(--line)}
+  .stat:last-child{border-right:0;margin-right:0;padding-right:0}
+  .stat b{display:block;font-family:var(--serif);font-size:30px;line-height:1;font-weight:600}
+  .stat span{font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-family:var(--mono)}
+
+  /* ---------- layout ---------- */
+  .layout{display:grid;grid-template-columns:210px minmax(0,1fr);gap:56px;padding:48px 0 80px;align-items:start}
+  .layout > *{min-width:0}
+  #content{min-width:0;max-width:100%}
+  .tablewrap{max-width:100%}
+  .code{max-width:100%}
+  .sidenav{position:sticky;top:76px;font-size:13.5px}
+  .sidenav h4{
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 10px;font-weight:500;
+  }
+  .sidenav ul{list-style:none;margin:0 0 26px;padding:0}
+  .sidenav li{margin:0}
+  .sidenav a{
+    display:block;padding:4px 0 4px 12px;color:var(--ink-soft);text-decoration:none;
+    border-left:2px solid transparent;transition:all .12s;
+  }
+  .sidenav a:hover{color:var(--accent);border-left-color:var(--accent);background:var(--accent-soft)}
+
+  /* ---------- sections ---------- */
+  .cat{margin-bottom:64px;scroll-margin-top:80px}
+  .cat-head{display:flex;align-items:baseline;gap:16px;border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:8px}
+  .cat-head h2{font-family:var(--serif);font-size:30px;font-weight:600;margin:0;letter-spacing:-.01em}
+  .cat-head .count{font-family:var(--mono);font-size:12px;color:var(--muted);margin-left:auto}
+  .cat-intro{color:var(--muted);font-size:14.5px;margin:0 0 28px;max-width:70ch}
+
+  /* ---------- pattern card ---------- */
+  .card{
+    background:var(--card);border:1px solid var(--line);border-left:3px solid var(--line-strong);
+    border-radius:var(--radius);padding:26px 28px;margin-bottom:20px;
+    scroll-margin-top:80px;transition:border-left-color .15s, box-shadow .15s;
+  }
+  .card:hover{border-left-color:var(--accent);box-shadow:0 2px 14px rgba(20,24,29,.05)}
+  .card-top{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+  .num{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.08em}
+  .card h3{font-family:var(--serif);font-size:23px;font-weight:600;margin:0;letter-spacing:-.01em}
+  .tag{
+    font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+    padding:2px 7px;border-radius:2px;background:var(--teal-soft);color:var(--teal);
+    border:1px solid #c9e3de;
+  }
+  .tag.hot{background:var(--accent-soft);color:var(--accent);border-color:#f2d3c2}
+  .intent{color:var(--ink-soft);margin:0 0 18px;font-size:15.5px}
+  .intent strong{color:var(--ink);font-weight:600}
+
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-bottom:18px}
+  .block h5{
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 8px;font-weight:500;
+  }
+  .block ul{margin:0;padding-left:18px;font-size:14px;color:var(--ink-soft)}
+  .block li{margin-bottom:5px}
+  .block li::marker{color:var(--accent)}
+
+  /* ---------- code ---------- */
+  .code{
+    position:relative;background:var(--code-bg);border-radius:var(--radius);
+    border:1px solid #1c2530;overflow:hidden;margin:0;
+  }
+  .code-bar{
+    display:flex;align-items:center;gap:8px;padding:7px 12px;
+    border-bottom:1px solid var(--code-line);background:#0c1116;
+  }
+  .code-bar .lang{
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#7d8b99;
+  }
+  .code-bar .dots{display:flex;gap:5px;margin-right:2px}
+  .code-bar .dots i{width:7px;height:7px;border-radius:50%;background:#2b3742;display:block}
+  .copy{
+    margin-left:auto;background:transparent;border:1px solid #2b3742;color:#93a1af;
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;padding:3px 9px;
+    border-radius:2px;cursor:pointer;transition:all .15s;
+  }
+  .copy:hover{border-color:var(--accent);color:#f0b79c}
+  .copy.done{border-color:var(--teal);color:#7fd1c4}
+  pre{margin:0;padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:12.8px;line-height:1.62;color:#d7dee6}
+  pre code{font-family:inherit}
+  .tok-kw{color:#e08a5f}
+  .tok-str{color:#8fc9a8}
+  .tok-com{color:#5f7183;font-style:italic}
+  .tok-num{color:#c9a2e0}
+  .tok-fn{color:#7fb3d5}
+
+  .warn{
+    display:flex;gap:10px;margin-top:16px;padding:11px 14px;
+    background:#fdf6ec;border:1px solid #f0e0c4;border-radius:2px;font-size:13.5px;color:#6b5327;
+  }
+  .warn b{color:#8a5a12;font-weight:600;white-space:nowrap}
+
+  /* ---------- decision table ---------- */
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}
+  table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+  th{
+    text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);font-weight:500;padding:12px 16px;border-bottom:1px solid var(--line-strong);background:#f2ede4;
+  }
+  td{padding:11px 16px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink-soft)}
+  tr:last-child td{border-bottom:0}
+  td:first-child{color:var(--ink);font-weight:500}
+  td a{color:var(--accent);text-decoration:none;border-bottom:1px solid #f0c9b4}
+  td a:hover{border-bottom-color:var(--accent)}
+
+  .empty{display:none;padding:40px;text-align:center;color:var(--muted);font-style:italic}
+
+  footer{border-top:1px solid var(--line);padding:28px 0 60px;color:var(--muted);font-size:13px}
+  footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+
+  @media (max-width:900px){
+    .layout{grid-template-columns:1fr;gap:0;padding-top:32px}
+    .sidenav{display:none}
+    .cols{grid-template-columns:1fr;gap:18px}
+    .hero{padding:44px 0 30px}
+    .stat{padding-right:22px;margin-right:22px}
+    .card{padding:22px 18px}
+    .search{max-width:none}
+    .brand span.full{display:none}
+  }
+  @media (max-width:560px){
+    .wrap{padding:0 16px}
+    .topbar-inner{padding:10px 16px;gap:12px}
+    .stats{gap:14px 0}
+    .stat b{font-size:24px}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand"><span class="mark">DP</span><span class="full">Design Patterns Playbook</span></div>
+    <div class="search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Filter patterns… (e.g. cache, undo, plugin)" aria-label="Filter patterns">
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="hero">
+    <div class="kicker">Field manual · v1.0</div>
+    <h1>Eighteen patterns, <em>one</em> working example each.</h1>
+    <p class="lede">
+      A pattern is a name for a shape your code keeps wanting to take. This playbook gives you the
+      intent, the trigger that tells you to reach for it, a runnable example, and the cost you pay
+      for it — so you can pick deliberately instead of by reflex.
+    </p>
+    <div class="stats">
+      <div class="stat"><b>18</b><span>Patterns</span></div>
+      <div class="stat"><b>3</b><span>Categories</span></div>
+      <div class="stat"><b>18</b><span>Code samples</span></div>
+      <div class="stat"><b>0</b><span>Dependencies</span></div>
+    </div>
+  </section>
+
+  <div class="layout">
+
+    <nav class="sidenav" aria-label="Pattern index">
+      <h4>Creational</h4>
+      <ul>
+        <li><a href="#singleton">Singleton</a></li>
+        <li><a href="#factory-method">Factory Method</a></li>
+        <li><a href="#abstract-factory">Abstract Factory</a></li>
+        <li><a href="#builder">Builder</a></li>
+        <li><a href="#prototype">Prototype</a></li>
+      </ul>
+      <h4>Structural</h4>
+      <ul>
+        <li><a href="#adapter">Adapter</a></li>
+        <li><a href="#decorator">Decorator</a></li>
+        <li><a href="#facade">Facade</a></li>
+        <li><a href="#proxy">Proxy</a></li>
+        <li><a href="#composite">Composite</a></li>
+        <li><a href="#bridge">Bridge</a></li>
+      </ul>
+      <h4>Behavioral</h4>
+      <ul>
+        <li><a href="#strategy">Strategy</a></li>
+        <li><a href="#observer">Observer</a></li>
+        <li><a href="#command">Command</a></li>
+        <li><a href="#state">State</a></li>
+        <li><a href="#template-method">Template Method</a></li>
+        <li><a href="#iterator">Iterator</a></li>
+        <li><a href="#chain">Chain of Responsibility</a></li>
+      </ul>
+      <h4>Reference</h4>
+      <ul>
+        <li><a href="#chooser">Which one do I need?</a></li>
+        <li><a href="#antipatterns">When not to</a></li>
+      </ul>
+    </nav>
+
+    <div id="content">
+
+      <!-- ============ CREATIONAL ============ -->
+      <section class="cat" id="creational">
+        <div class="cat-head"><h2>Creational</h2><span class="count">05 patterns</span></div>
+        <p class="cat-intro">These control <em>how objects come into existence</em>. Reach for them when construction is expensive, conditional, or needs to stay decoupled from the code that uses the result.</p>
+
+        <article class="card" id="singleton" data-name="singleton global instance config">
+          <div class="card-top"><span class="num">01</span><h3>Singleton</h3><span class="tag hot">use sparingly</span></div>
+          <p class="intent"><strong>Intent:</strong> guarantee exactly one instance of a class and give it a single, global access point.</p>
+          <div class="cols">
+            <div class="block"><h5>Reach for it when</h5><ul>
+              <li>One shared resource must be coordinated — a connection pool, a config registry, a logger sink.</li>
+              <li>Duplicate instances would cause real harm (two writers to the same file).</li>
+            </ul></div>
+            <div class="block"><h5>Cost</h5><ul>
+              <li>Hidden global state makes tests order-dependent.</li>
+              <li>Hard to parallelise and to mock.</li>
+            </ul></div>
+          </div>
+          <div class="code">
+            <div class="code-bar"><span class="dots"><i></i><i></i><i></i></span><span class="lang">python</span><button class="copy">copy</button></div>
+<pre><code class="lang-python">class Config:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance.settings = {"env": "prod", "retries": 3}
+        return cls._instance
+
+cfg = Config()
+assert Config() is cfg          # same object, every time
+print(cfg.settings["env"])      # prod</code></pre>
+          </div>
+          <div class="warn"><b>Watch out</b><span>In Python a module-level instance (<code>config = Config()</code>) is usually the better answer — it is a singleton the language already enforces. Use the class form only when you need lazy construction.</span></div>
+        </article>
+
+        <article class="card" id="factory-method" data-name="factory method create object subclass export">
+          <div class="card-top"><span class="num">02</span><h3>Factory Method</h3><span class="tag">everyday</span></div>
+          <p class="intent"><strong>Intent:</strong> let a function or subclass decide <em>which concrete class</em> to instantiate, so callers depend on an interface rather than a constructor.</p>
+          <div class="cols">
+            <div class="block"><h5>Reach for it when</h5><ul>
+              <li>Callers would otherwise write <code>if fmt == "csv": … elif …</code>.</li>
+              <li>New variants should be addable without editing call sites.</li>
+            </ul></div>
+            <div class="block"><h5>Cost</h5><ul>
+              <li>One more indirection to trace when debugging.</li>
+              <li>Overkill when there is only ever one implementation.</li>
+            </ul></div>
+          </div>
+          <div class="code">
+            <div class="code-bar"><span class="dots"><i></i><i></i><i></i></span><span class="lang">python</span><button class="copy">copy</button></div>
+<pre><code class="lang-python">from abc import ABC, abstractmethod
+import json
+
+class Exporter(ABC):
+    @abstractmethod
+    def export(self, rows): ...
+
+class CsvExporter(Exporter):
+    def export(self, rows):
+        return "\n".join(",".join(map(str, r)) for r in rows)
+
+class JsonExporter(Exporter):
+    def export(self, rows):
+        return json.dumps(rows)
+
+def make_exporter(fmt: str) -> Exporter:
+    registry = {"csv": CsvExporter, "json": JsonExporter}
+    if fmt not in registry:
+        raise ValueError(f"unknown format: {fmt}")
+    return registry[fmt]()
+
+print(make_exporter("csv").export([(1, "a"), (2, "b")]))</code></pre>
+          </div>
+        </article>
+
+        <article class="card" id="abstract-factory" data-name="abstract factory family theme ui kit">
+          <div class="card-top"><span class="num">03</span><h3>Abstract Factory</h3><span class="tag">families</span></div>
+          <p class="intent"><strong>Intent:</strong> create <em>whole families</em> of related objects that must be used together, without naming their concrete classes.</p>
+          <div class="cols">
+            <div class="block"><h5>Reach for it when</h5><ul>
+              <li>Products come in matched sets — a dark theme's button, input and modal.</li>
+              <li>Mixing products from two families would be a bug.</li>
+            </ul></div>
+            <div class="block"><h5>Cost</h5><ul>
+              <li>Adding a new <em>product kind</em> touches every factory.</li>
+              <li>More types than a plain factory method.</li>
+            </ul></div>
+          </div>
+          <div class="code">
+            <div class="code-bar"><span class="dots"><i></i><i></i><i></i></span><span class="lang">python</span><button class="copy">copy</button></div>
+<pre><code class="lang-python">from abc import ABC, abstractmethod
+
+class Button(ABC):
+    @abstractmethod
+    def render(self) -> str: ...
+
+class DarkButton(Button):
+    def render(self): return "[ Dark Button ]"
+
+class LightButton(Button):
+    def render(self): return "[ Light Button ]"
+
+class ThemeFactory(ABC):
+    @abstractmethod
+    def button(self) -> Button: ...
+
+class DarkTheme(ThemeFactory):
+    def button(self): return DarkButton()
+
+class LightTheme(ThemeFactory):
+    def button(self): return LightButton()
+
+def build_ui(factory: ThemeFactory) -> str:
+    return factory.button().render()   # never names a concrete class
+
+print(build_ui(DarkTheme()))   # [ Dark Button ]</code></pre>
+          </div>
+        </article>
+
+        <article class="card" id="builder" data-name="builder step by step query fluent chain">
+          <div class="card-top"><span class="num">04</span><h3>Builder</h3><span class="tag">everyday</span></div>
+          <p class="intent"><strong>Intent:</strong> construct a complex object step by step, so the same process can produce different representations and no half-built object ever escapes.</p>
+          <div class="cols">
+            <div class="block"><h5>Reach for it when</h5><ul>
+              <li>A constructor would need 6+ parameters, many optional.</li>
+              <li>Construction has an order or validation that must hold.</li>
+            </ul></div>
+            <div class="block"><h5>Cost</h5><ul>
+              <li>An extra class per built type.</li>
+              <li>Mutable builder is not thread-safe unless you copy per build.</li>
+            </ul></div>
+          </div>
+          <div class="code">
+            <div class="code-bar"><span class="dots"><i></i><i></i><i></i></span><span class="lang">python</span><button class="copy">copy</button></div>
+<pre><code class="lang-python">class QueryBuilder:
+    def __init__(self):
+        self._select = "*"
+        self._where = []
+        self._limit = None
+
+    def select(self, *cols):
+        self._select = ", ".join(cols)
+        return self
+
+    def where(self, cond):
+        self._where.append(cond)
+        return self
+
+    def limit(self, n):
+        self._limit = n
+        return self
+
+    def build(self) -> str:
+        sql = f"SELECT {self._select} FROM orders"
+        if self._where:
+            sql += " WHERE " + " AND ".join(self._where)
+        if self._limit:
+            sql += f" LIMIT {self._limit}"
+        return sql
+
+q = (QueryBuilder()
+     .select("id", "total")
+     .where("status = 'paid'")
+     .where("total > 100")
+     .limit(50)
+     .build())
+print(q)</code></pre>
+          </div>
+        </article>
+
+        <article class="card" id="prototype" data-name="prototype clone copy deep template">
+          <div class="card-top"><span class="num">05</span><h3>Prototype</h3><span class="tag">copying</span></div>
+          <p class="intent"><strong>Intent:</strong> create new objects by cloning an existing configured instance instead of re-running its construction.</p>
+          <div class="cols">
+            <div class="block"><h5>Reach for it when</h5><ul>
+              <li>Construction is expensive (parsing, network, heavy defaults).</li>
+              <li>You need many near-identical variants of a configured object.</li>
+            </ul></div>
+            <div class="block"><h5>Cost</h5><ul>
+              <li>Deep vs shallow copy is a real correctness trap.</li>
+              <li>Cyclic references need explicit handling.</li>
+            </ul></div>
+          </div>
+          <div class="code">
+            <div class="code-bar"><span class="dots"><i></i><i></i><i></i></span><span class="lang">python</span><button class="copy">copy</button></div>
+<pre><code class="lang-python">import copy
+
+class Document:
+    def __init__(self, title, blocks):
+        self.title = title
+        self.blocks = blocks
+
+    def clone(self):
+        return copy.deepcopy(self)   # nested blocks are copied too
+
+base = Document("Quarterly Report", [{"type": "h1", "text": "Q3"}])
+
+draft = base.clone()
+draft.blocks.append({"type": "p", "text": "Revenue up 12%"})
+
+print(len(base.blocks))    # 1  — original untouched
+print(len(draft.blocks))   # 2</code></pre>
+          </div>
+          <div class="warn"><b>Watch out</b><span><code>copy.copy()</code> shares the nested list — mutating the clone would silently mutate the original. Use <code>deepcopy</code> unless you have proven sharing is safe.</span></div>
+        </article>
+      </section>
+
+      <!-- ============ STRUCTURAL ============ -->
+      <section class="cat" id="structural">
+        <div class="cat-head"><h2>Structural</h2><span class="count">06 patterns</span></div>
+        <p class="cat-intro">These control <em>how objects are composed</em>. They let you add behaviour, hide complexity, or make incompatible things fit together — without rewriting what already works.</p>
+
+        <article class="card" id="adapter" data-name="adapter wrapper legacy interface incompatible">
+          <div class="card-top"><span class="num">06</span><h3>Adapter</h3><span class="tag">everyday</span></div>
+          <p class="intent"><strong>Intent:</strong> convert one interface into another that the caller expects, so incompatible code can collaborate.</p>
+          <div class="cols">
+            <div class="block"><h5>Reach for it when</h5><ul>
+              <li>Integrating a third-party SDK or legacy module you cannot change.</li>
+              <li>You want to swap vendors behind a stable internal interface.</li>
+            </ul></div>
+            <div class="block"><h5>Cost</h5><ul>
+              <li>One more layer to step through.</li>
+              <li>Leaky adapters expose vendor quirks anyway.</li>
+            </ul></div>
+          </div>
+          <div class="code">
+            <div class="code-bar"><span class="dots"><i></i><i></i><i></i></span><span class="lang">python</span><button class="copy">copy</button></div>
+<pre><code class="lang-python">class LegacyPrinter:                 # cannot be modified
+    def print_old(self, text):
+        print(f"[legacy] {text}")
+
+class Printer:                       # what our code expects
+    def print(self, text: str) -> None: ...
+
+class PrinterAdapter(Printer):
+    def __init__(self, legacy: LegacyPrinter):
+        self._legacy = legacy
+
+    def print(self, text: str) -> None:
+        self._legacy.print_old(text.upper())
+
+def send_receipt(printer: Printer):
+    printer.print("order 1042 confirmed")
+
+send_receipt(PrinterAdapter(LegacyPrinter()))</code></pre>
+          </div>
+        </article>
+
+        <article class="card" id="decorator" data-name="decorator wrap behaviour middleware retry cache">
+          <div class="card-top"><span class="num">07</span><h3>Decorator</h3><span class="tag hot">everyday</span></div>
+          <p class="intent"><strong>Intent:</strong> attach responsibilities to an object at runtime by wrapping it, instead of subclassing every combination.</p>
+          <div class="cols">
+            <div class="block"><h5>Reach for it when</h5><ul>
+              <li>Cross-cutting concerns: retry, cache, timing, auth, logging.</li>
+              <li>Combinations would explode into <code>TimedCachedRetryClient</code> classes.</li>
+            </ul></div>
+            <div class="block"><h5>Cost</h5><ul>
+              <li>Deep stacks are hard to read in a traceback.</li>
+              <li>Order of wrapping changes behaviour — document it.</li>
+            </ul></div>
+          </div>
+          <div class="code">
+            <div class="code-bar"><span class="dots"><i></i><i></i><i></i></span><span class="lang">python</span><button class="copy">copy</button></div>
+<pre><code class="lang-python">import functools, time
+
+def timed(fn):
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        start = time.perf_counter()
+        try:
+            return fn(*args, **kwargs)
+        finally:
+            ms = (time.perf_counter() - start) * 1000
+            print(f"{fn.__name__} took {ms:.1f}ms")
+    return wrapper
+
+def retried(times=3):
+    def deco(fn):
+        @functools.wraps(fn)
+        def wrapper(*args, **kwargs):
+            for attempt in range(1, times + 1):
+                try:
+                    return fn(*args, **kwargs)
+                except Exception:
+                    if attempt == times:
+                        raise
+        return wrapper
+    return deco
+
+@timed
+@retried(times=3)
+def fetch_report(order_id):
+    return {"id": order_id, "status": "ok"}
+
+fetch_report(1042)</code></pre>
+          </div>
+          <div class="warn"><b>Watch out</b><span>Decorators apply bottom-up: <code>@timed</code> above <code>@retried</code> means the timer measures all three attempts, not each one. Swap them if you want per-attempt timing.</span></div>
+        </article>
+
+        <article class="card" id="facade" data-name="facade simplify subsystem api gateway">
+          <div class="card-top"><span class="num">08</span><h3>Facade</h3><span class="tag">simplify</span></div>
+          <p class="intent"><strong>Intent:</strong> give a complex subsystem one small, coherent entry point, so most callers never touch its internals.</p>
+          <div class="cols">
+            <div class="block"><h5>Reach for it when</h5><ul>
+              <li>Callers repeat the same 5-step dance across the codebase.</li>
+              <li>You want to expose a stable API over a messy library.</li>
+            </ul></div>
+            <div class="block"><h5>Cost</h5><ul>
+              <li>Can become a god object if it keeps growing.</li>
+              <li>Power users still need the raw subsystem — keep it reachable.</li>
+            </ul></div>
+          </div>
+          <div class="code">
+            <div class="code-bar"><span class="dots"><i></i><i></i><i></i></span><span class="lang">python</span><button class="copy">copy</button></div>
+<pre><code class="lang-python">class AudioExtractor:
+    def extract(self, path): return f"audio<{path}>"
+
+class CodecFactory:
+    def for_format(self, fmt): return f"codec:{fmt}"
+
+class Encoder:
+    def __init__(self, codec): self.codec = codec
+    def encode(self, audio): return f"{self.codec}|{audio}"
+
+class VideoConverter:                      # the facade
+    def convert(self, path: str, fmt: str) -> str:
+        audio = AudioExtractor().extract(path)
+        codec = CodecFactory().for_format(fmt)
+        return Encoder(codec).encode(audio)
+
+# caller sees one method instead of three collaborating classes
+print(VideoConverter().convert("talk.mp4", "ogg"))</code></pre>
+          </div>
+        </article>
+
+        <article class="card" id="proxy" data-name="proxy lazy cache access control remote">
+          <div class="card-top"><span class="num">09</span><h3>Proxy</h3><span class="tag">control access</span></div>
+          <p class="intent"><strong>Intent:</strong> stand in for another object to control access to it — lazily, cheaply, or with a permission check.</p>
+          <div class="cols">
+            <div class="block"><h5>Reach for it when</h5><ul>
+              <li>An object is expensive to create and may never be used.</li>
+              <li>You need caching, access checks, or a remote stand-in.</li>
+            </ul></div>
+            <div class="block"><h5>Cost</h5><ul>
+              <li>Same interface as the real thing — easy to confuse the two.</li>
+              <li>Cache invalidation becomes your problem.</li>
+            </ul></div>
+          </div>
+          <div class="code">
+            <div class="code-bar"><span class="dots"><i></i><i></i><i></i></span><span class="lang">python</span><button class="copy">copy</button></div>
+<pre><code class="lang-python">class RealImage:
+    def __init__(self, path):
+        self.path = path
+        print(f"loading {path} from disk…")   # expensive
+
+    def display(self):
+        return f"showing {self.path}"
+
+class LazyImage:                              # proxy
+    def __init__(self, path):
+        self.path = path
+        self._real = None
+
+    def display(self):
+        if self._real is None:
+            self._real = RealImage(self.path)  # built on first use
+        return self._real.display()
+
+img = LazyImage("cover.png")   # nothing loaded yet
+print(img.display())           # loads, then shows
+print(img.display())           # reuses the instance</code></pre>
+          </div>
+        </article>
+
+        <article class="card" id="composite" data-name="composite tree hierarchy recursive uniform">
+          <div class="card-top"><span class="num">10</span><h3>Composite</h3><span class="tag">trees</span></div>
+          <p class="intent"><strong>Intent:</strong> compose objects into tree structures and treat individual leaves and whole branches through the same interface.</p>
+          <div class="cols">
+            <div class="block"><h5>Reach for it when</h5><ul>
+              <li>Data is naturally a tree: files, UI widgets, org charts, ASTs.</li>
+              <li>Callers should not care whether they hold one node or a subtree.</li>
+            </ul></div>
+            <div class="block"><h5>Cost</h5><ul>
+              <li>Over-general interface: leaves must stub out child methods.</li>
+              <li>Recursion depth is a real limit on deep trees.</li>
+            </ul></div>
+          </div>
+          <div class="code">
+            <div class="code-bar"><span class="dots"><i></i><i></i><i></i></span><span class="lang">python</span><button class="copy">copy</button></div>
+<pre><code class="lang-python">class Node:
+    def size(self) -> int: ...
+
+class File(Node):
+    def __init__(self, name, bytes_):
+        self.name, self.bytes_ = name, bytes_
+    def size(self): return self.bytes_
+
+class Folder(Node):
+    def __init__(self, name):
+        self.name, self.children = name, []
+    def add(self, node):
+        self.children.append(node)
+        return self
+    def size(self):
+        return sum(child.size() for child in self.children)
+
+root = (Folder("src")
+        .add(File("main.py", 1200))
+        .add(Folder("lib").add(File("util.py", 800))
+                            .add(File("io.py", 400))))
+
+print(root.size())   # 2400 — one call, whole tree</code></pre>
+          </div>
+        </article>
+
+        <article class="card" id="bridge" data-name="bridge abstraction implementation two dimensions">
+          <div class="card-top"><span class="num">11</span><h3>Bridge</h3><span class="tag">two axes</span></div>
+          <p class="intent"><strong>Intent:</strong> split an abstraction from its implementation so the two can vary independently instead of multiplying into a class per combination.</p>
+          <div class="cols">
+            <div class="block"><h5>Reach for it when</h5><ul>
+              <li>You have two independent dimensions — shape × renderer, message × channel.</li>
+              <li>Subclassing both would give you N×M classes.</li>
+            </ul></div>
+            <div class="block"><h5>Cost</h5><ul>
+              <li>More indirection up front for a payoff that only appears at scale.</li>
+              <li>Easy to over-apply on a small codebase.</li>
+            </ul></div>
+          </div>
+          <div class="code">
+            <div class="code-bar"><span class="dots"><i></i><i></i><i></i></span><span class="lang">python</span><button class="copy">copy</button></div>
+<pre><code class="lang-python">from abc import ABC, abstractmethod
+
+class Renderer(ABC):                       # implementation axis
+    @abstractmethod
+    def circle(self, r: int) -> str: ...
+
+class VectorRenderer(Renderer):
+    def circle(self, r): return f"<circle r='{r}'/>"
+
+class RasterRenderer(Renderer):
+    def circle(self, r): return f"pixels for r={r}"
+
+class Shape:                               # abstraction axis
+    def __init__(self, renderer: Renderer):
+        self.renderer = renderer
+
+class Circle(Shape):
+    def __init__(self, renderer, r):
+        super().__init__(renderer)
+        self.r = r
+    def draw(self): return self.renderer.circle(self.r)
+
+print(Circle(VectorRenderer(), 10).draw())
+print(Circle(RasterRenderer(), 10).draw())</code></pre>
+          </div>
+        </article>
+      </section>
+
+      <!-- ============ BEHAVIORAL ============ -->
+      <section class="cat" id="behavioral">
+        <div class="cat-head"><h2>Behavioral</h2><span class="count">07 patterns</span></div>
+        <p class="cat-intro">These control <em>how objects talk to each other</em> — who decides, who listens, who remembers, and how a request travels.</p>
+
+        <article class="card" id="strategy" data-name="strategy algorithm swap policy pricing">
+          <div class="card-top"><span class="num">12</span><h3>Strategy</h3><span class="tag hot">everyday</span></div>
+          <p class="intent"><strong>Intent:</strong> define a family of interchangeable algorithms and let the caller pick one at runtime.</p>
+          <div class="cols">
+            <div class="block"><h5>Reach for it when</h5><ul>
+              <li>You have a growing <code>if/elif</code> chain choosing behaviour.</li>
+              <li>Policies differ per tenant, region, or plan.</li>
+            </ul></div>
+            <div class="block"><h5>Cost</h5><ul>
+              <li>Callers must know which strategy to pass.</li>
+              <li>For two branches, a plain function is simpler.</li>
+            </ul></div>
+          </div>
+          <div class="code">
+            <div class="code-bar"><span class="dots"><i></i><i></i><i></i></span><span class="lang">python</span><button class="copy">copy</button></div>
+<pre><code class="lang-python">from abc import ABC, abstractmethod
+
+class Pricing(ABC):
+    @abstractmethod
+    def total(self, amount: float) -> float: ...
+
+class FullPrice(Pricing):
+    def total(self, amount): return amount
+
+class Seasonal(Pricing):
+    def __init__(self, pct): self.pct = pct
+    def total(self, amount): return round(amount * (1 - self.pct), 2)
+
+class Member(Pricing):
+    def total(self, amount): return round(amount - 5, 2)
+
+class Cart:
+    def __init__(self, pricing: Pricing):
+        self.pricing = pricing
+    def checkout(self, amount):
+        return self.pricing.total(amount)
+
+print(Cart(Seasonal(0.20)).checkout(100))   # 80.0
+print(Cart(Member()).checkout(100))         # 95.0</code></pre>
+          </div>
+        </article>
+
+        <article class="card" id="observer" data-name="observer events pubsub subscribe notify listener">
+          <div class="card-top"><span class="num">13</span><h3>Observer</h3><span class="tag hot">everyday</span></div>
+          <p class="intent"><strong>Intent:</strong> let objects subscribe to changes in another object, so the publisher never needs to know who is listening.</p>
+          <div class="cols">
+            <div class="block"><h5>Reach for it when</h5><ul>
+              <li>One event should trigger several independent reactions.</li>
+              <li>You want to add a listener without editing the emitter.</li>
+            </ul></div>
+            <div class="block"><h5>Cost</h5><ul>
+              <li>Control flow becomes indirect and harder to trace.</li>
+              <li>Forgotten subscriptions leak memory.</li>
+            </ul></div>
+          </div>
+          <div class="code">
+            <div class="code-bar"><span class="dots"><i></i><i></i><i></i></span><span class="lang">python</span><button class="copy">copy</button></div>
+<pre><code class="lang-python">class EventBus:
+    def __init__(self):
+        self._subs = {}
+
+    def subscribe(self, event, fn):
+        self._subs.setdefault(event, []).append(fn)
+        return lambda: self._subs[event].remove(fn)   # unsubscribe
+
+    def publish(self, event, payload):
+        for fn in list(self._subs.get(event, [])):
+            fn(payload)
+
+bus = EventBus()
+off = bus.subscribe("order.paid", lambda o: print("ship", o["id"]))
+bus.subscribe("order.paid", lambda o: print("email receipt", o["id"]))
+
+bus.publish("order.paid", {"id": 42})
+off()                                   # stop listening
+bus.publish("order.paid", {"id": 43})   # only the email fires</code></pre>
+          </div>
+        </article>
+
+        <article class="card" id="command" data-name="command undo redo queue action history">
+          <div class="card-top"><span class="num">14</span><h3>Command</h3><span class="tag">undo / queue</span></div>
+          <p class="intent"><strong>Intent:</strong> turn a request into a standalone object, so it can be queued, logged, retried, or undone.</p>
+          <div class="cols">
+            <div class="block"><h5>Reach for it when</h5><ul>
+              <li>You need undo/redo, or an audit trail of actions.</li>
+              <li>Work must be queued, scheduled, or replayed.</li>
+            </ul></div>
+            <div class="block"><h5>Cost</h5><ul>
+              <li>One class per action — real overhead for simple apps.</li>
+              <li>Undo requires capturing enough state to reverse cleanly.</li>
+            </ul></div>
+          </div>
+          <div class="code">
+            <div class="code-bar"><span class="dots"><i></i><i></i><i></i></span><span class="lang">python</span><button class="copy">copy</button></div>
+<pre><code class="lang-python">from abc import ABC, abstractmethod
+
+class Command(ABC):
+    @abstractmethod
+    def execute(self): ...
+    @abstractmethod
+    def undo(self): ...
+
+class AddText(Command):
+    def __init__(self, doc, text):
+        self.doc, self.text = doc, text
+    def execute(self): self.doc.append(self.text)
+    def undo(self): self.doc.pop()
+
+class History:
+    def __init__(self): self._done = []
+    def run(self, cmd):
+        cmd.execute()
+        self._done.append(cmd)
+    def undo(self):
+        if self._done:
+            self._done.pop().undo()
+
+doc, history = [], History()
+history.run(AddText(doc, "hello"))
+history.run(AddText(doc, "world"))
+print(doc)          # ['hello', 'world']
+history.undo()
+print(doc)          # ['hello']</code></pre>
+          </div>
+        </article>
+
+        <article class="card" id="state" data-name="state machine transitions status finite">
+          <div class="card-top"><span class="num">15</span><h3>State</h3><span class="tag">state machines</span></div>
+          <p class="intent"><strong>Intent:</strong> let an object change its behaviour when its internal state changes, by delegating to a state object instead of branching on a status field.</p>
+          <div class="cols">
+            <div class="block"><h5>Reach for it when</h5><ul>
+              <li>Behaviour depends on a status and the rules are growing.</li>
+              <li>Illegal transitions must be impossible, not just discouraged.</li>
+            </ul></div>
+            <div class="block"><h5>Cost</h5><ul>
+              <li>A class per state — heavy for 2–3 states.</li>
+              <li>Transition logic can scatter across state classes.</li>
+            </ul></div>
+          </div>
+          <div class="code">
+            <div class="code-bar"><span class="dots"><i></i><i></i><i></i></span><span class="lang">python</span><button class="copy">copy</button></div>
+<pre><code class="lang-python">class Order:
+    ALLOWED = {
+        "pending": {"pay": "paid", "cancel": "cancelled"},
+        "paid":    {"ship": "shipped", "refund": "refunded"},
+        "shipped": {"deliver": "delivered"},
+    }
+
+    def __init__(self):
+        self.state = "pending"
+
+    def _move(self, action):
+        nxt = self.ALLOWED.get(self.state, {}).get(action)
+        if nxt is None:
+            raise ValueError(f"cannot {action} from {self.state}")
+        self.state = nxt
+        return self
+
+    def pay(self):    return self._move("pay")
+    def ship(self):   return self._move("ship")
+    def cancel(self): return self._move("cancel")
+
+o = Order().pay().ship()
+print(o.state)          # shipped
+try:
+    o.cancel()          # illegal from shipped
+except ValueError as e:
+    print(e)</code></pre>
+          </div>
+          <div class="warn"><b>Watch out</b><span>This table-driven form is the pragmatic version. Switch to real state <em>objects</em> only when each state carries its own data or many methods.</span></div>
+        </article>
+
+        <article class="card" id="template-method" data-name="template method skeleton hook pipeline steps">
+          <div class="card-top"><span class="num">16</span><h3>Template Method</h3><span class="tag">skeleton</span></div>
+          <p class="intent"><strong>Intent:</strong> define the skeleton of an algorithm in a base class, letting subclasses override individual steps without changing the order.</p>
+          <div class="cols">
+            <div class="block"><h5>Reach for it when</h5><ul>
+              <li>Several classes run the same sequence with different step bodies.</li>
+              <li>The order of steps is a rule you must not let callers break.</li>
+            </ul></div>
+            <div class="block"><h5>Cost</h5><ul>
+              <li>Inheritance coupling — the base class is hard to change later.</li>
+              <li>Fragile-base-class risk if hooks multiply.</li>
+            </ul></div>
+          </div>
+          <div class="code">
+            <div class="code-bar"><span class="dots"><i></i><i></i><i></i></span><span class="lang">python</span><button class="copy">copy</button></div>
+<pre><code class="lang-python">from abc import ABC, abstractmethod
+
+class Pipeline(ABC):
+    def run(self):                     # the template — final by convention
+        raw = self.extract()
+        clean = self.transform(raw)
+        self.load(clean)
+
+    @abstractmethod
+    def extract(self): ...
+
+    @abstractmethod
+    def transform(self, raw): ...
+
+    def load(self, rows):              # hook with a sensible default
+        print(f"loaded {len(rows)} rows")
+
+class CsvPipeline(Pipeline):
+    def extract(self): return ["a,1", "b,2"]
+    def transform(self, raw): return [line.split(",") for line in raw]
+
+class ApiPipeline(Pipeline):
+    def extract(self): return [{"id": 1}, {"id": 2}]
+    def transform(self, raw): return [r["id"] for r in raw]
+
+CsvPipeline().run()   # loaded 2 rows
+ApiPipeline().run()   # loaded 2 rows</code></pre>
+          </div>
+        </article>
+
+        <article class="card" id="iterator" data-name="iterator traverse lazy generator walk">
+          <div class="card-top"><span class="num">17</span><h3>Iterator</h3><span class="tag">traversal</span></div>
+          <p class="intent"><strong>Intent:</strong> expose a way to walk a collection's elements one at a time, without revealing how the collection is stored.</p>
+          <div class="cols">
+            <div class="block"><h5>Reach for it when</h5><ul>
+              <li>Callers should not depend on your internal data structure.</li>
+              <li>You want lazy traversal of a large or infinite sequence.</li>
+            </ul></div>
+            <div class="block"><h5>Cost</h5><ul>
+              <li>In most languages the language already gives you this — don't rebuild it.</li>
+              <li>Stateful iterators can be invalidated by mutation mid-walk.</li>
+            </ul></div>
+          </div>
+          <div class="code">
+            <div class="code-bar"><span class="dots"><i></i><i></i><i></i></span><span class="lang">python</span><button class="copy">copy</button></div>
+<pre><code class="lang-python">class Tree:
+    def __init__(self, value, children=None):
+        self.value = value
+        self.children = children or []
+
+    def __iter__(self):                 # depth-first, lazy
+        yield self.value
+        for child in self.children:
+            yield from child
+
+root = Tree("a", [Tree("b", [Tree("d")]), Tree("c")])
+
+for node in root:
+    print(node)          # a b d c
+
+print(list(root))        # ['a', 'b', 'd', 'c']</code></pre>
+          </div>
+        </article>
+
+        <article class="card" id="chain" data-name="chain of responsibility middleware pipeline handlers">
+          <div class="card-top"><span class="num">18</span><h3>Chain of Responsibility</h3><span class="tag">middleware</span></div>
+          <p class="intent"><strong>Intent:</strong> pass a request along a chain of handlers until one of them deals with it, so the sender never names a receiver.</p>
+          <div class="cols">
+            <div class="block"><h5>Reach for it when</h5><ul>
+              <li>Request handling is a pipeline: auth → rate limit → validate → route.</li>
+              <li>Which handler applies is only known at runtime.</li>
+            </ul></div>
+            <div class="block"><h5>Cost</h5><ul>
+              <li>A request can fall off the end unhandled — always define a terminal case.</li>
+              <li>Debugging means following the whole chain.</li>
+            </ul></div>
+          </div>
+          <div class="code">
+            <div class="code-bar"><span class="dots"><i></i><i></i><i></i></span><span class="lang">python</span><button class="copy">copy</button></div>
+<pre><code class="lang-python">class Handler:
+    def __init__(self, nxt=None):
+        self.next = nxt
+
+    def handle(self, req):
+        if self.next:
+            return self.next.handle(req)
+        return "200 OK"          # terminal case
+
+class Auth(Handler):
+    def handle(self, req):
+        if not req.get("token"):
+            return "401 Unauthorized"
+        return super().handle(req)
+
+class RateLimit(Handler):
+    def handle(self, req):
+        if req.get("burst", 0) > 100:
+            return "429 Too Many Requests"
+        return super().handle(req)
+
+pipeline = Auth(RateLimit())
+
+print(pipeline.handle({"token": "t", "burst": 5}))    # 200 OK
+print(pipeline.handle({"burst": 5}))                  # 401 Unauthorized
+print(pipeline.handle({"token": "t", "burst": 500}))  # 429 Too Many Requests</code></pre>
+          </div>
+        </article>
+      </section>
+
+      <!-- ============ CHOOSER ============ -->
+      <section class="cat" id="chooser">
+        <div class="cat-head"><h2>Which one do I need?</h2><span class="count">decision table</span></div>
+        <p class="cat-intro">Start from the problem, not the pattern name. Find your symptom in the left column.</p>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Your symptom</th><th>Reach for</th><th>Why</th></tr></thead>
+            <tbody>
+              <tr><td>“My constructor takes 9 arguments”</td><td><a href="#builder">Builder</a></td><td>Named steps beat positional parameters.</td></tr>
+              <tr><td>“I have a 40-line if/elif on a type string”</td><td><a href="#factory-method">Factory Method</a> or <a href="#strategy">Strategy</a></td><td>Creating objects vs. choosing behaviour.</td></tr>
+              <tr><td>“I need to add retry/cache/logging to 12 methods”</td><td><a href="#decorator">Decorator</a></td><td>Wrap once, apply everywhere, no subclass explosion.</td></tr>
+              <tr><td>“This third-party SDK has the wrong shape”</td><td><a href="#adapter">Adapter</a></td><td>Translate at the boundary, keep your code clean.</td></tr>
+              <tr><td>“Callers repeat the same 5-step setup”</td><td><a href="#facade">Facade</a></td><td>One entry point over a messy subsystem.</td></tr>
+              <tr><td>“This object is expensive and often unused”</td><td><a href="#proxy">Proxy</a></td><td>Defer construction until first real use.</td></tr>
+              <tr><td>“I need undo / redo”</td><td><a href="#command">Command</a></td><td>Each action becomes a reversible object.</td></tr>
+              <tr><td>“Status field with rules that keep growing”</td><td><a href="#state">State</a></td><td>Make illegal transitions impossible.</td></tr>
+              <tr><td>“One event, five independent reactions”</td><td><a href="#observer">Observer</a></td><td>Publishers stop knowing about listeners.</td></tr>
+              <tr><td>“Request must pass auth → limit → validate”</td><td><a href="#chain">Chain of Responsibility</a></td><td>Composable pipeline, runtime order.</td></tr>
+              <tr><td>“Same algorithm, different data source”</td><td><a href="#template-method">Template Method</a></td><td>Fix the order, override the steps.</td></tr>
+              <tr><td>“Two dimensions of variation (N×M classes)”</td><td><a href="#bridge">Bridge</a></td><td>Split the axes so they vary independently.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============ ANTI-PATTERNS ============ -->
+      <section class="cat" id="antipatterns">
+        <div class="cat-head"><h2>When not to</h2><span class="count">read this</span></div>
+        <p class="cat-intro">Patterns are a vocabulary, not a checklist. Every one of them adds indirection, and indirection has a price.</p>
+        <div class="card" style="border-left-color:var(--accent)">
+          <div class="cols" style="margin-bottom:0">
+            <div class="block"><h5>Signals you are over-engineering</h5><ul>
+              <li>An interface with exactly one implementation and no test double.</li>
+              <li>A factory that only ever returns one class.</li>
+              <li>Six files to add a field to a form.</li>
+              <li>You cannot name the change the abstraction is protecting you from.</li>
+            </ul></div>
+            <div class="block"><h5>What to do instead</h5><ul>
+              <li>Write the plain version first; extract the pattern when the second case appears.</li>
+              <li>Prefer a function over a Strategy class when there is no state.</li>
+              <li>Prefer composition over inheritance unless the order of steps is the point.</li>
+              <li>Delete abstractions nobody has needed for a year.</li>
+            </ul></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="empty" id="empty">No patterns match that filter. Try “cache”, “undo”, “tree”, or “events”.</div>
+
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>The Design Patterns Playbook — 18 patterns, 18 runnable examples.</span>
+    <span>Examples in Python 3.11 · patterns after Gamma, Helm, Johnson &amp; Vlissides</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- syntax highlighting ---------- */
+  var KEYWORDS = [
+    "class","def","return","if","else","elif","for","while","in","not","and","or",
+    "None","True","False","self","import","from","as","new","const","let","var",
+    "function","interface","type","extends","implements","public","private","readonly",
+    "this","void","string","number","boolean","async","await","export","default",
+    "throw","try","catch","finally","switch","case","break","continue","static",
+    "abstract","override","super","constructor","yield","lambda","raise","with",
+    "is","pass","global","nonlocal","assert","del","null","undefined","of","instanceof"
+  ];
+  var kwRe = new RegExp("\\b(" + KEYWORDS.join("|") + ")\\b", "g");
+
+  function escapeHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function highlight(src) {
+    var text = escapeHtml(src);
+    var out = "";
+    var i = 0;
+    var n = text.length;
+    while (i < n) {
+      var ch = text[i];
+      var rest = text.slice(i);
+
+      // comment
+      if (ch === "#" || rest.slice(0, 2) === "//") {
+        var end = text.indexOf("\n", i);
+        if (end === -1) end = n;
+        out += '<span class="tok-com">' + text.slice(i, end) + "</span>";
+        i = end;
+        continue;
+      }
+      // string
+      if (ch === '"' || ch === "'") {
+        var q = ch, j = i + 1;
+        while (j < n) {
+          if (text[j] === "\\") { j += 2; continue; }
+          if (text[j] === q) { j++; break; }
+          if (text[j] === "\n") break;
+          j++;
+        }
+        out += '<span class="tok-str">' + text.slice(i, j) + "</span>";
+        i = j;
+        continue;
+      }
+      // number
+      if (/[0-9]/.test(ch) && !/[A-Za-z_]/.test(text[i - 1] || "")) {
+        var k = i;
+        while (k < n && /[0-9._]/.test(text[k])) k++;
+        out += '<span class="tok-num">' + text.slice(i, k) + "</span>";
+        i = k;
+        continue;
+      }
+      // identifier / keyword
+      if (/[A-Za-z_]/.test(ch)) {
+        var m = i;
+        while (m < n && /[A-Za-z0-9_]/.test(text[m])) m++;
+        var word = text.slice(i, m);
+        if (KEYWORDS.indexOf(word) !== -1) {
+          out += '<span class="tok-kw">' + word + "</span>";
+        } else if (text[m] === "(") {
+          out += '<span class="tok-fn">' + word + "</span>";
+        } else {
+          out += word;
+        }
+        i = m;
+        continue;
+      }
+      out += ch;
+      i++;
+    }
+    return out;
+  }
+
+  var blocks = document.querySelectorAll("pre code");
+  for (var b = 0; b < blocks.length; b++) {
+    var el = blocks[b];
+    var raw = el.textContent;
+    el.setAttribute("data-raw", raw);
+    el.innerHTML = highlight(raw);
+  }
+
+  /* ---------- copy buttons ---------- */
+  var buttons = document.querySelectorAll(".copy");
+  for (var c = 0; c < buttons.length; c++) {
+    buttons[c].addEventListener("click", function () {
+      var btn = this;
+      var code = btn.closest(".code").querySelector("code");
+      var text = code.getAttribute("data-raw") || code.textContent;
+      function done() {
+        btn.textContent = "copied";
+        btn.classList.add("done");
+        setTimeout(function () {
+          btn.textContent = "copy";
+          btn.classList.remove("done");
+        }, 1600);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, function () { fallback(text, done); });
+      } else {
+        fallback(text, done);
+      }
+    });
+  }
+
+  function fallback(text, done) {
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); done(); } catch (e) { /* ignore */ }
+    document.body.removeChild(ta);
+  }
+
+  /* ---------- live filter ---------- */
+  var input = document.getElementById("q");
+  var cards = Array.prototype.slice.call(document.querySelectorAll(".card[id]"));
+  var sections = Array.prototype.slice.call(document.querySelectorAll("section.cat"));
+  var empty = document.getElementById("empty");
+
+  function applyFilter() {
+    var q = (input.value || "").trim().toLowerCase();
+    var visible = 0;
+
+    cards.forEach(function (card) {
+      var hay = (card.getAttribute("data-name") || "") + " " + card.textContent.toLowerCase();
+      var match = q === "" || hay.indexOf(q) !== -1;
+      card.style.display = match ? "" : "none";
+      if (match) visible++;
+    });
+
+    sections.forEach(function (sec) {
+      var any = sec.querySelector(".card[id]");
+      if (!any) return; // chooser / antipatterns always shown
+      var shown = Array.prototype.slice.call(sec.querySelectorAll(".card[id]")).some(function (c) {
+        return c.style.display !== "none";
+      });
+      sec.style.display = shown ? "" : "none";
+    });
+
+    empty.style.display = visible === 0 ? "block" : "none";
+  }
+
+  input.addEventListener("input", applyFilter);
+  input.addEventListener("search", applyFilter);
+})();
+</script>
+</body>
+</html>
